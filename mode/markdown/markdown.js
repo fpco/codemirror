@@ -12,7 +12,9 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
     csharp: "text/x-csharp",
     "c#": "text/x-csharp",
     scala: "text/x-scala",
-    activecode: "yesod"
+    haskell: "yesod",
+    active: "yesod",
+    web: "yesod"
   };
 
   var getMode = (function () {
