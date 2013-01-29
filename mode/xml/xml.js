@@ -1,3 +1,6 @@
+// Changes made by Anupam Jain: Added parserConfig.allowIncompleteAttribute to
+// disable strict attribute checking, which interfered with Hamlet syntax
+// highlighting.
 CodeMirror.defineMode("xml", function(config, parserConfig) {
   var indentUnit = config.indentUnit;
   var multilineTagIndentFactor = parserConfig.multilineTagIndentFactor || 1;
@@ -235,6 +238,8 @@ CodeMirror.defineMode("xml", function(config, parserConfig) {
   }
 
   function attrState(type, stream, state) {
+    // Skip checking for argument types if incomplete attributes are allowed
+    if (parserConfig.allowIncompleteAttributes) {return baseState;}
     if (type == "word") {
       setStyle = "attribute";
       return attrEqState;
