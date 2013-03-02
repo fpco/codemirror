@@ -8,7 +8,7 @@
 CodeMirror.defineMode("routes", function() {
 
   function err(stream, state) {
-    console.log("ERR: "+stream.current());
+    //console.log("ERR: "+stream.current());
     stream.skipToEnd();
     state.parsing = 0;
     return "error";
@@ -46,12 +46,12 @@ CodeMirror.defineMode("routes", function() {
         // Skip till end of route or a variable
         if(stream.match(/[0-9a-zA-Z\/]*\/[0-9a-zA-Z]*/)) {
           next = stream.peek();
-          console.log("0: "+next);
+          //console.log("0: "+next);
           // URL ended
           if(next==='*'||next==='#') state.parsing = 1;
           // URL variable
           else state.parsing = 2;
-          console.log("0: "+state.parsing);
+          //console.log("0: "+state.parsing);
           return "string-2";
         }
 
@@ -68,7 +68,7 @@ CodeMirror.defineMode("routes", function() {
           if(stream.peek() === ' ') state.parsing = 2;
           // Continue parsing URL pattern
           else state.parsing = 0;
-          console.log("1: "+state.parsing);
+          //console.log("1: "+state.parsing);
           return "atom";
         }
 
@@ -85,7 +85,7 @@ CodeMirror.defineMode("routes", function() {
       // Route Constructor
       if(state.parsing === 2) {
         if(stream.match(/[A-Z][0-9a-zA-Z]*/)) {
-          console.log("ROUTE: "+stream.current());
+          //console.log("ROUTE: "+stream.current());
           state.parsing = 3;
           return "tag";
         }
