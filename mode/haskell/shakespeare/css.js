@@ -367,7 +367,7 @@ CodeMirror.cssMode = function(config, allowNested, layoutBased) {
       var context = state.stack[state.stack.length-1];
       if (style == "property") {
         if(!context && newline) {
-          console.log(state);
+          //console.log(state);
         } else if (context == "propertyValue"){
           // slight duplication here. refactor.
           if (newline && !propertyKeywords[stream.current()]) {
