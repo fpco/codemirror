@@ -1,3 +1,12 @@
+// Workaround for missing functionality in IE 8 and earlier.
+if( Object.create === undefined ) {
+	Object.create = function( o ) {
+	    function F(){}
+	    F.prototype = o;
+	    return new F();
+	};
+}
+
 CodeMirror.defineMode("haskell", function() {
 
   function switchState(source, setState, f) {
@@ -169,7 +178,7 @@ CodeMirror.defineMode("haskell", function() {
   
   
   var wellKnownWords = (function() {
-    var wkw = {};
+    var wkw = Object.create(null);
     function setType(t) {
       return function () {
         for (var i = 0; i < arguments.length; i++)
