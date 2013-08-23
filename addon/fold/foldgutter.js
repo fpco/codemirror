@@ -84,7 +84,7 @@
   function onGutterClick(cm, line, gutter) {
     var opts = cm.state.foldGutter.options;
     if (gutter != opts.gutter) return;
-    cm.foldCode(Pos(line, 0), opts.rangeFinder);
+    cm.foldCode(Pos(line, 0), opts);
   }
 
   function onChange(cm) {
