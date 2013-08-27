@@ -32,7 +32,7 @@
     CodeMirror.on(myWidget, "mousedown", function() { myRange.clear(); });
     var myRange = cm.markText(range.from, range.to, {
       replacedWith: myWidget,
-      clearOnEnter: true,
+      clearOnEnter: options ? options.clearOnEnter : false,
       __isFold: true
     });
     myRange.on("clear", function(from, to) {
