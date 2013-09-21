@@ -191,10 +191,11 @@ CodeMirror.defineMode("haskell", function() {
     setType("keyword")(
       "\.\.", ":", "::", "=", "\\", "\"", "<-", "->", "@", "~", "=>");
       
+    /*
     setType("builtin")(
       "!!", "$!", "$", "&&", "+", "++", "-", ".", "/", "/=", "<", "<=", "=<<",
       "==", ">", ">=", ">>", ">>=", "^", "^^", "||", "*", "**");
-      
+
     setType("builtin")(
       "Bool", "Bounded", "Char", "Double", "EQ", "Either", "Enum", "Eq",
       "False", "FilePath", "Float", "Floating", "Fractional", "Functor", "GT",
@@ -230,6 +231,7 @@ CodeMirror.defineMode("haskell", function() {
       "toRational", "truncate", "uncurry", "undefined", "unlines", "until",
       "unwords", "unzip", "unzip3", "userError", "words", "writeFile", "zip",
       "zip3", "zipWith", "zipWith3");
+    */
       
     return wkw;
   })();
