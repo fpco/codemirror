@@ -20,6 +20,7 @@ CodeMirror.defineMode("haskell", function(_config, modeConfig) {
   var digitRE = /[0-9]/;
   var hexitRE = /[0-9A-Fa-f]/;
   var octitRE = /[0-7]/;
+  var qualRE = /[a-z_A-Z0-9'\.]*\./;
   var idRE = /[a-z_A-Z0-9']/;
   var symbolRE = /[-!#$%&*+.\/<=>?@\\^|~:]/;
   var specialRE = /[(),;[\]`{}]/;
@@ -58,18 +59,14 @@ CodeMirror.defineMode("haskell", function(_config, modeConfig) {
     if (ch == '"') {
       return switchState(source, setState, stringLiteral);
     }
-      
-    var inQual = false;
-    while (largeRE.test(ch)) {
-      source.eatWhile(idRE);
-      if (!source.eat('.')) {
-        if(inQual) return "qualifier";
-        else return "variable-2";
-      } else {
-        inQual = true;
-      }
+
+    if (largeRE.test(ch) && source.match(qualRE)) {
+      return "qualifier";
     }
-    if(inQual) return "qualifier";
+    if (largeRE.test(ch)) {
+      source.eatWhile(idRE);
+      return "variable-2";
+    }
       
     if (smallRE.test(ch)) {
       source.eatWhile(idRE);
