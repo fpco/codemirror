@@ -109,9 +109,9 @@ CodeMirror.defineMode("haskell", function() {
           return "comment";
         }
       }
-      var t = "variable";
+      var t = "operator";
       if (ch == ':') {
-        t = "variable-2";
+        t = "operator-2";
       }
       source.eatWhile(symbolRE);
       return t;    
