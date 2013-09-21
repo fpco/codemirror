@@ -191,10 +191,11 @@ CodeMirror.defineMode("haskell", function(_config, modeConfig) {
     setType("keyword")(
       "\.\.", ":", "::", "=", "\\", "\"", "<-", "->", "@", "~", "=>");
       
+    /*
     setType("builtin")(
       "!!", "$!", "$", "&&", "+", "++", "-", ".", "/", "/=", "<", "<=", "=<<",
       "==", ">", ">=", ">>", ">>=", "^", "^^", "||", "*", "**");
-      
+
     setType("builtin")(
       "Bool", "Bounded", "Char", "Double", "EQ", "Either", "Enum", "Eq",
       "False", "FilePath", "Float", "Floating", "Fractional", "Functor", "GT",
@@ -234,6 +235,8 @@ CodeMirror.defineMode("haskell", function(_config, modeConfig) {
     var override = modeConfig.overrideKeywords;
     if (override) for (var word in override) if (override.hasOwnProperty(word))
       wkw[word] = override[word];
+
+    */
 
     return wkw;
   })();
