@@ -20,7 +20,8 @@
     if (typeof options == "object") {
       this.minChars = options.minChars;
       this.style = options.style;
-      this.showToken = options.showToken;
+      this.boundary = options.boundary;
+      this.regex = options.regex;
     }
     if (this.style == null) this.style = DEFAULT_TOKEN_STYLE;
     if (this.minChars == null) this.minChars = DEFAULT_MIN_CHARS;
@@ -55,25 +56,26 @@
         cm.removeOverlay(state.overlay);
         state.overlay = null;
       }
-      if (!cm.somethingSelected() && state.showToken) {
-        var re = state.showToken === true ? /[\w$]/ : state.showToken;
-        var cur = cm.getCursor(), line = cm.getLine(cur.line), start = cur.ch, end = start;
-        while (start && re.test(line.charAt(start - 1))) --start;
-        while (end < line.length && re.test(line.charAt(end))) ++end;
-        if (start < end)
-          cm.addOverlay(state.overlay = makeOverlay(line.slice(start, end), re, state.style));
+      if (cm.somethingSelected() && state.boundary && state.regex) {
+        var from = cm.getCursor("start");
+        var to = cm.getCursor("end");
+        line = cm.getLine(from.line);
+        if (from.line == to.line && from.ch < to.ch && line) {
+          var sliced = line.slice(from.ch, to.ch);
+          var matches = state.regex.exec(sliced);
+          if (matches && matches[0].length == sliced.length) {
+            var re = state.boundary === true ? /[\W$]/ : state.boundary;
+            cm.addOverlay(state.overlay = makeOverlay(sliced, re, state.style));
+          }
+        }
         return;
       }
-      if (cm.getCursor("head").line != cm.getCursor("anchor").line) return;
-      var selection = cm.getSelection().replace(/^\s+|\s+$/g, "");
-      if (selection.length >= state.minChars)
-        cm.addOverlay(state.overlay = makeOverlay(selection, false, state.style));
     });
   }
 
   function boundariesAround(stream, re) {
-    return (!stream.start || !re.test(stream.string.charAt(stream.start - 1))) &&
-      (stream.pos == stream.string.length || !re.test(stream.string.charAt(stream.pos)));
+    return (!stream.start || re.test(stream.string.charAt(stream.start - 1))) &&
+      (stream.pos == stream.string.length || re.test(stream.string.charAt(stream.pos)));
   }
 
   function makeOverlay(query, hasBoundary, style) {
