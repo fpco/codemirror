@@ -7,7 +7,7 @@ if( Object.create === undefined ) {
 	};
 }
 
-CodeMirror.defineMode("haskell", function(_config, modeConfig) {
+CodeMirror.defineMode("haskell", function(config, modeConfig) {
 
   function switchState(source, setState, f) {
     setState(f);
@@ -25,10 +25,41 @@ CodeMirror.defineMode("haskell", function(_config, modeConfig) {
   var symbolRE = /[-!#$%&*+.\/<=>?@\\^|~:]/;
   var specialRE = /[(),;[\]`{}]/;
   var whiteCharRE = /[ \t\v\f]/; // newlines are handled in tokenizer
+  var layoutKeyword = /let|where|of|do/;
+  // I would include -> for case statements, but it's also type syntax.
+  var eolIndentOpen = /=|$|<-/;
 
   function normal(source, setState) {
+    // Store this line's indentation if we're at the beginning.
+    if (source.start == 0) {
+      setState(normal, source.indentation());
+    }
     if (source.eatWhile(whiteCharRE)) {
       return null;
+    }
+
+    //TODO: Don't indent after module header.
+    var matched = source.match(layoutKeyword);
+    if (matched) {
+      if (source.eol()) {
+        setState(normal, source.indentation() + config.indentUnit);
+        return null;
+      } else if (whiteCharRE.test(source.peek())) {
+        setState(normal, source.column() + matched[0].length + 1);
+        return null;
+      } else {
+        source.backUp(matched[0].length);
+      }
+    }
+    // Auto-indent after some tokens.
+    matched = source.match(eolIndentOpen);
+    if (matched) {
+      if (source.eol()) {
+        setState(normal, source.indentation() + config.indentUnit);
+        return "operator";
+      } else {
+        source.backUp(matched[0].length);
+      }
     }
 
     var ch = source.next();
@@ -241,18 +272,24 @@ CodeMirror.defineMode("haskell", function(_config, modeConfig) {
   })();
 
   return {
-    startState: function ()  { return { f: normal }; },
-    copyState:  function (s) { return { f: s.f }; },
+    startState: function ()  { return { f: normal, haskellIndent: 0 }; },
+    copyState:  function (s) { return { f: s.f, haskellIndent: s.haskellIndent }; },
 
     token: function(stream, state) {
-      var t = state.f(stream, function(s) { state.f = s; });
+      var t = state.f(stream,
+        function(s, i) {
+          state.f = s;
+          if (i !== undefined) {
+            state.haskellIndent = i;
+          }
+        });
       var w = stream.current();
       return (w in wellKnownWords) ? wellKnownWords[w] : t;
     },
 
-    blockCommentStart: "{-",
-    blockCommentEnd: "-}",
-    lineComment: "--"
+    indent: function(state) {
+      return state.haskellIndent;
+    }
   };
 
 });
