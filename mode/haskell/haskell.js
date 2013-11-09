@@ -125,7 +125,7 @@ CodeMirror.defineMode("haskell", function(config, modeConfig) {
 
     //TODO: Don't indent after module header.
     if (source.match(layoutKeyword)) {
-      if (source.eol() || whiteCharRE.test(source.peek)) {
+      if (source.eol() || whiteCharRE.test(source.peek())) {
         var indent = state.indentation + config.indentUnit;
         setState(block(column, indent), state, { offset: indent, startBlock: true });
         return "variable";
