@@ -1,3 +1,12 @@
+// Workaround for missing functionality in IE 8 and earlier.
+if( Object.create === undefined ) {
+	Object.create = function( o ) {
+	    function F(){}
+	    F.prototype = o;
+	    return new F();
+	};
+}
+
 CodeMirror.defineMode("haskell", function(_config, modeConfig) {
 
   function switchState(source, setState, f) {
@@ -169,7 +178,7 @@ CodeMirror.defineMode("haskell", function(_config, modeConfig) {
   
   
   var wellKnownWords = (function() {
-    var wkw = {};
+    var wkw = Object.create(null);
     function setType(t) {
       return function () {
         for (var i = 0; i < arguments.length; i++)
@@ -241,7 +250,7 @@ CodeMirror.defineMode("haskell", function(_config, modeConfig) {
     token: function(stream, state) {
       var t = state.f(stream, function(s) { state.f = s; });
       var w = stream.current();
-      return wellKnownWords.hasOwnProperty(w) ? wellKnownWords[w] : t;
+      return (w in wellKnownWords) ? wellKnownWords[w] : t;
     },
 
     blockCommentStart: "{-",
