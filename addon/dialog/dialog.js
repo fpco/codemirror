@@ -28,6 +28,7 @@
     closeNotification(this, null);
     var dialog = dialogDiv(this, template, options && options.bottom);
     var closed = false, me = this;
+    var keepOpen = options && options.keepOpen;
     function close() {
       if (closed) return;
       closed = true;
@@ -38,11 +39,14 @@
       if (options && options.value) inp.value = options.value;
       CodeMirror.on(inp, "keydown", function(e) {
         if (options && options.onKeyDown && options.onKeyDown(e, inp.value, close)) { return; }
-        if (e.keyCode == 13 || e.keyCode == 27) {
+        var isCtrlF = e.keyCode == 70 && e.ctrlKey && options && options.catchCtrlF;
+        if (e.keyCode == 13 || e.keyCode == 27 || isCtrlF) {
           CodeMirror.e_stop(e);
-          close();
-          me.focus();
-          if (e.keyCode == 13) callback(inp.value);
+          if (!keepOpen || (keepOpen && e.keyCode == 27)) {
+            close();
+            me.focus();
+          }
+          if (e.keyCode == 13 || isCtrlF) callback(inp.value, e.shiftKey);
         }
       });
       if (options && options.onKeyUp) {

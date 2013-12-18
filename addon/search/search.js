@@ -46,8 +46,15 @@
     // Heuristic: if the query string is all lowercase, do a case insensitive search.
     return cm.getSearchCursor(query, pos, queryCaseInsensitive(query));
   }
+  function getSingleLineSel(cm) {
+    var start = cm.getCursor("start");
+    var end = cm.getCursor("end");
+    if (start.line == end.line && start.ch != end.ch) {
+      return cm.getSelection();
+    }
+  }
   function dialog(cm, text, shortText, deflt, f) {
-    if (cm.openDialog) cm.openDialog(text, f, {value: deflt});
+    if (cm.openDialog) return cm.openDialog(text, f, { keepOpen: true, catchCtrlF: true, value: deflt });
     else f(prompt(shortText, deflt));
   }
   function confirmDialog(cm, text, shortText, fs) {
@@ -63,21 +70,25 @@
   function doSearch(cm, rev) {
     var state = getSearchState(cm);
     if (state.query) return findNext(cm, rev);
-    dialog(cm, queryDialog, "Search for:", cm.getSelection(), function(query) {
+    var initial = getSingleLineSel(cm);
+    dialog(cm, queryDialog, "Search for:", initial, function(query, shiftKey) {
       cm.operation(function() {
-        if (!query || state.query) return;
+        if (!query) return;
         state.query = parseQuery(query);
         cm.removeOverlay(state.overlay, queryCaseInsensitive(state.query));
         state.overlay = searchOverlay(state.query);
         cm.addOverlay(state.overlay);
         state.posFrom = state.posTo = cm.getCursor();
-        findNext(cm, rev);
+        findNext(cm, shiftKey ? !rev : rev);
       });
     });
   }
   function findNext(cm, rev) {cm.operation(function() {
     var state = getSearchState(cm);
-    var cursor = getSearchCursor(cm, state.query, rev ? state.posFrom : state.posTo);
+    var cursor = getSearchCursor(cm, state.query,
+      // Subtract one when doing a reverse search, to make sure we make progress.
+      rev ? { line: state.posFrom.line, ch: state.posFrom.ch - 1 }
+          : state.posTo);
     if (!cursor.find(rev)) {
       cursor = getSearchCursor(cm, state.query, rev ? CodeMirror.Pos(cm.lastLine()) : CodeMirror.Pos(cm.firstLine(), 0));
       if (!cursor.find(rev)) return;
@@ -98,10 +109,12 @@
   var replacementQueryDialog = 'With: <input type="text" style="width: 10em"/>';
   var doReplaceConfirm = "Replace? <button>Yes</button> <button>No</button> <button>Stop</button>";
   function replace(cm, all) {
-    dialog(cm, replaceQueryDialog, "Replace:", cm.getSelection(), function(query) {
+    var initial = getSingleLineSel(cm);
+    dialog(cm, replaceQueryDialog, "Replace:", initial, function(query) {
       if (!query) return;
       query = parseQuery(query);
-      dialog(cm, replacementQueryDialog, "Replace with:", "", function(text) {
+      var closeDialog;
+      closeDialog = dialog(cm, replacementQueryDialog, "Replace with:", initial, function(text) {
         if (all) {
           cm.operation(function() {
             for (var cursor = getSearchCursor(cm, query); cursor.findNext();) {
@@ -110,16 +123,23 @@
                 cursor.replace(text.replace(/\$(\d)/, function(_, i) {return match[i];}));
               } else cursor.replace(text);
             }
+            if (closeDialog) closeDialog();
           });
         } else {
           clearSearch(cm);
-          var cursor = getSearchCursor(cm, query, cm.getCursor());
+          var curCursor = cm.getCursor();
+          // This way, if the initial replacement is selected, it'll be found.
+          var pos = { line: curCursor.line, ch: curCursor.ch - 1 };
+          var cursor = getSearchCursor(cm, query, pos);
           var advance = function() {
             var start = cursor.from(), match;
             if (!(match = cursor.findNext())) {
               cursor = getSearchCursor(cm, query);
               if (!(match = cursor.findNext()) ||
-                  (start && cursor.from().line == start.line && cursor.from().ch == start.ch)) return;
+                  (start && cursor.from().line == start.line && cursor.from().ch == start.ch)) {
+                if (closeDialog) closeDialog();
+                return;
+              }
             }
             cm.setSelection(cursor.from(), cursor.to());
             cm.scrollIntoView({from: cursor.from(), to: cursor.to()});
