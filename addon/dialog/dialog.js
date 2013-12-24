@@ -4,7 +4,8 @@
   function dialogDiv(cm, template, bottom) {
     var wrap = cm.getWrapperElement();
     var dialog;
-    dialog = wrap.appendChild(document.createElement("div"));
+    dialog = document.createElement("div");
+    $(wrap).parent().prepend(dialog);
     if (bottom) {
       dialog.className = "CodeMirror-dialog CodeMirror-dialog-bottom";
     } else {
