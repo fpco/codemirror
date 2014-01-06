@@ -88,6 +88,7 @@
         data = data_;
         if (finished) return;
         if (!data || !data.list.length) return done();
+        if (completion.widget) completion.widget.close();
         completion.widget = new Widget(completion, data);
       }
 
@@ -99,8 +100,7 @@
             (pos.ch && closeOn.test(line.charAt(pos.ch - 1)))) {
           completion.close();
         } else {
-          debounce = setTimeout(update, 170);
-          if (completion.widget) completion.widget.close();
+          debounce = setTimeout(update, 0);
         }
       }
       this.cm.on("cursorActivity", activity);
