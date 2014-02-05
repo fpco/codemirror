@@ -22,8 +22,7 @@
       this.minChars = options.minChars;
       this.style = options.style;
       this.delay = options.delay;
-      this.boundary = options.boundary;
-      this.regex = options.regex;
+      this.tokens = options.tokens;
     }
     if (this.style == null) this.style = DEFAULT_TOKEN_STYLE;
     if (this.minChars == null) this.minChars = DEFAULT_MIN_CHARS;
@@ -59,16 +58,17 @@
         cm.removeOverlay(state.overlay);
         state.overlay = null;
       }
-      if (cm.somethingSelected() && state.boundary && state.regex) {
+      if (cm.somethingSelected()) {
         var from = cm.getCursor("start");
         var to = cm.getCursor("end");
         line = cm.getLine(from.line);
         if (from.line == to.line && from.ch < to.ch && line) {
           var sliced = line.slice(from.ch, to.ch);
-          var matches = state.regex.exec(sliced);
-          if (matches && matches[0].length == sliced.length) {
-            var re = state.boundary === true ? /[\W$]/ : state.boundary;
-            cm.addOverlay(state.overlay = makeOverlay(sliced, re, state.style));
+          for (var i = 0; i < state.tokens.length; ++i) {
+            var token = state.tokens[i];
+            if (token.regex.test(sliced)) {
+              cm.addOverlay(state.overlay = makeOverlay(sliced, token.boundary, state.style));
+            }
           }
         }
         return;
