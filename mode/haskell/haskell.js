@@ -299,6 +299,7 @@ CodeMirror.defineMode("haskell", function(config, modeConfig) {
   }
 
   function stringGap(source, state, setState) {
+    while (source.eat(whiteCharRE)) { }
     if (source.eat('\\')) {
       return switchState(source, state, setState, stringLiteral);
     }
